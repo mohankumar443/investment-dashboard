@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Token, User, Holding, StockQuote, Recommendation } from '../types';
+import type { Token, User, Holding, StockQuote, Recommendation, PortfolioSummary, MarketInsights } from '../types';
 
 const API_URL = 'http://localhost:8000/api';
 
@@ -46,6 +46,10 @@ export const portfolioService = {
         const response = await api.get<Holding[]>('/portfolio');
         return response.data;
     },
+    getSummary: async () => {
+        const response = await api.get<PortfolioSummary>('/portfolio/summary');
+        return response.data;
+    },
     importFromPDF: async () => {
         const response = await api.post('/brokerage/import/pdf');
         return response.data;
@@ -76,7 +80,7 @@ export const recommendationService = {
 
 export const insightsService = {
     getInsights: async () => {
-        const response = await api.get<any>('/insights');
+        const response = await api.get<MarketInsights>('/insights');
         return response.data;
     },
 };

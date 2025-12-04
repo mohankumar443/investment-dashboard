@@ -22,12 +22,22 @@ class Holding(HoldingBase):
     market_value: Optional[float] = None
     unrealized_pl: Optional[float] = None
     unrealized_pl_percent: Optional[float] = None
+    
+    # New fields for UI
+    week52_low: Optional[float] = None
+    week52_high: Optional[float] = None
+    buy_score: Optional[int] = None
 
     class Config:
         from_attributes = True
 
 class PortfolioSummary(BaseModel):
     total_value: float
-    total_pl: float
-    total_pl_percent: float
-    sector_allocation: dict[str, float]
+    weekly_change_value: float
+    weekly_change_percent: float
+    trend_data: List[float]
+    
+    # Keep old fields if needed or remove if strictly following new reqs
+    total_pl: Optional[float] = None
+    total_pl_percent: Optional[float] = None
+    sector_allocation: Optional[dict[str, float]] = None

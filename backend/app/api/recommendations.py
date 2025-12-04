@@ -7,7 +7,7 @@ from app.services.recommendation_service import recommendation_service
 
 router = APIRouter()
 
-@router.get("/", response_model=RecommendationResponse)
+@router.get("", response_model=RecommendationResponse)
 async def get_recommendations(
     current_user = Depends(get_current_active_user),
     db: Session = Depends(get_db)

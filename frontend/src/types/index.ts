@@ -1,3 +1,5 @@
+export type Theme = 'fidelity-green' | 'institutional-blue' | 'modern-light';
+
 export interface User {
   id: number;
   email: string;
@@ -17,47 +19,49 @@ export interface Holding {
   quantity: number;
   avg_cost: number;
   sector: string;
-  current_price?: number; // Added for UI display
-  market_value?: number; // Added for UI display
-  unrealized_pl?: number; // Added for UI display
-  unrealized_pl_percent?: number; // Added for UI display
+  current_price: number;
+  market_value: number;
+  unrealized_pl: number;
+  unrealized_pl_percent: number;
+  week52_low: number;
+  week52_high: number;
+  buy_score: number;
 }
 
 export interface StockQuote {
   symbol: string;
-  current_price: number;
-  high_price: number;
-  low_price: number;
-  open_price: number;
-  previous_close: number;
-  percent_change: number;
-  change: number;
-  fifty_two_week_high?: number;
-  fifty_two_week_low?: number;
-  volatility?: number;
-  ai_score?: number;
-  market_cap?: string;
+  name: string;
+  price: number;
+  change_percent: number;
+  week52_low: number;
+  week52_high: number;
+  buy_score: number;
+  market_cap: string;
+  volume?: string;
+  change?: number;
 }
 
-export interface InsightsResponse {
-  opportunity_zone: Array<{
-    symbol: string;
-    price: number;
-    target: number;
-    gap: number;
-  }>;
-  overheated_zone: Array<{
-    symbol: string;
-    price: number;
-    target: number;
-    gap: number;
-  }>;
-  alerts: Array<{
-    type: string;
-    message: string;
-    severity: 'High' | 'Medium' | 'Low';
-  }>;
-  diversification_score: number;
+export interface InsightZone {
+  title: string;
+  description: string;
+  count: number;
+  stocks: StockQuote[];
+}
+
+export interface MarketInsights {
+  opportunity_zone: InsightZone;
+  overheated_zone: InsightZone;
+  neutral_zone?: InsightZone;
+}
+
+export interface PortfolioSummary {
+  total_value: number;
+  weekly_change_value: number;
+  weekly_change_percent: number;
+  trend_data: number[];
+  total_pl?: number;
+  total_pl_percent?: number;
+  sector_allocation?: Record<string, number>;
 }
 
 export interface Recommendation {
@@ -67,8 +71,3 @@ export interface Recommendation {
   suggested_action: 'Buy' | 'Sell' | 'Hold' | 'Watch';
 }
 
-export interface PortfolioSummary {
-  total_value: number;
-  total_gain_loss: number;
-  total_gain_loss_percent: number;
-}

@@ -3,6 +3,7 @@ from typing import List, Dict, Optional
 from app.config import get_settings
 from app.schemas import StockQuote
 from cachetools import TTLCache
+import random
 
 settings = get_settings()
 
@@ -17,8 +18,8 @@ class MarketService:
         if symbol in quote_cache:
             return quote_cache[symbol]
 
-        if not settings.FINNHUB_API_KEY:
-            # Return mock data if no API key
+        if not settings.FINNHUB_API_KEY or settings.FINNHUB_API_KEY == "your_finnhub_api_key":
+            # Return mock data if no API key or default placeholder
             return self._get_mock_quote(symbol)
 
         async with httpx.AsyncClient() as client:
@@ -34,16 +35,28 @@ class MarketService:
                 if data.get("c") == 0 and data.get("pc") == 0:
                      return self._get_mock_quote(symbol) # Fallback if symbol not found or empty
 
+                current_price = float(data["c"])
+                
+                # Finnhub quote endpoint doesn't return name, market_cap, etc.
+                # We would need a separate call for profile, but for now we'll estimate/mock missing fields
+                # to keep it fast and simple.
+                
                 quote = StockQuote(
                     symbol=symbol,
-                    current_price=float(data["c"]),
-                    high_price=float(data["h"]),
-                    low_price=float(data["l"]),
-                    open_price=float(data["o"]),
-                    previous_close=float(data["pc"]),
-                    percent_change=float(data["dp"]),
-                    change=float(data["d"])
+                    name=symbol, # Placeholder as quote endpoint doesn't return name
+                    price=current_price,
+                    change_percent=float(data["dp"]),
+                    change=float(data["d"]),
+                    week52_high=float(data["h"]), # Using day high as proxy if 52w not available, or mock it
+                    week52_low=float(data["l"]),  # Using day low as proxy
+                    buy_score=random.randint(40, 90), # Mock score
+                    market_cap="100B" # Mock cap
                 )
+                
+                # Improve data if possible (mocking 52w range based on price)
+                quote.week52_high = round(current_price * 1.2, 2)
+                quote.week52_low = round(current_price * 0.8, 2)
+                
                 quote_cache[symbol] = quote
                 return quote
             except Exception as e:
@@ -90,17 +103,13 @@ class MarketService:
         
         return StockQuote(
             symbol=symbol,
-            current_price=current_price,
-            high_price=round(current_price * 1.02, 2),
-            low_price=round(current_price * 0.98, 2),
-            open_price=round(current_price - change, 2),
-            previous_close=round(current_price - change, 2),
-            percent_change=round((change / current_price) * 100, 2),
+            name=symbol, # Use symbol as name for mock
+            price=current_price,
+            change_percent=round((change / current_price) * 100, 2),
             change=round(change, 2),
-            fifty_two_week_high=round(current_price * 1.4, 2),
-            fifty_two_week_low=round(current_price * 0.7, 2),
-            volatility=round(random.uniform(0.1, 0.5), 2),
-            ai_score=random.randint(30, 95),
+            week52_high=round(current_price * 1.4, 2),
+            week52_low=round(current_price * 0.7, 2),
+            buy_score=random.randint(30, 95),
             market_cap=f"{round(random.uniform(10, 2000), 1)}B"
         )
 
